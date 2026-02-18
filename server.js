@@ -1,29 +1,39 @@
 import express from "express";
-import fs from "fs";
-import csv from "csv-parser";
 import cors from "cors";
+import fetch from "node-fetch";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
 
-app.get("/verify/:id", (req, res) => {
+app.get("/verify/:id", async (req, res) => {
   const certId = req.params.id.trim();
 
-  let found = false;
+  try {
+    const url = `${process.env.SUPABASE_URL}/rest/v1/certificates?id=eq.${certId}`;
 
-  fs.createReadStream("cer.csv")
-    .pipe(csv())
-    .on("data", (row) => {
-      if (row.id === certId) {
-        found = true;
-        res.json(row);
-      }
-    })
-    .on("end", () => {
-      if (!found) {
-        res.status(404).json({ error: "Certificate not found" });
-      }
+    const response = await fetch(url, {
+      headers: {
+        apikey: process.env.SUPABASE_KEY,
+        Authorization: `Bearer ${process.env.SUPABASE_KEY}`,
+      },
     });
+
+    const data = await response.json();
+
+    if (!data.length) {
+      return res.status(404).json({ error: "Certificate not found" });
+    }
+
+    res.json(data[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
-app.listen(5000, () => console.log("🚀 Backend running on http://localhost:5000"));
+app.listen(5000, () =>
+  console.log("🚀 Backend running on http://localhost:5000")
+);
