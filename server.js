@@ -34,6 +34,67 @@ app.get("/verify/:id", async (req, res) => {
   }
 });
 
+app.use(express.json());
+
+app.post("/apply", async (req, res) => {
+  try {
+    const {
+      fullName,
+      collegeName,
+      email,
+      whatsappNo,
+      gender,
+      domain,
+    } = req.body;
+
+    const response = await fetch(
+      `${process.env.SUPABASE_URL_2}/rest/v1/internship_applications`,
+      {
+        method: "POST",
+        headers: {
+          apikey: process.env.SUPABASE_KEY_2,
+          Authorization: `Bearer ${process.env.SUPABASE_KEY_2}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal"
+        },
+        body: JSON.stringify([
+          {
+            full_name: fullName,
+            college_name: collegeName,
+            email,
+            whatsapp_no: whatsappNo,
+            gender,
+            domain
+          }
+        ])
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.log(error);
+
+      return res.status(400).json({
+        success: false,
+        message: "Failed to save application"
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Application submitted successfully"
+    });
+
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+  }
+});
+
 app.listen(5000, () =>
   console.log("🚀 Backend running on http://localhost:5000")
 );

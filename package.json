@@ -16,6 +16,7 @@
     "dotenv": "^17.2.4",
     "express": "^5.2.1",
     "mongoose": "^9.2.1",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "sib-api-v3-sdk": "^8.5.0"
   }
 }
